@@ -1,0 +1,52 @@
+plugins:
+  toggle-git:
+    shortCut: Shift-T
+    confirm: true
+    scopes:
+      - gitrepositories
+    description: Toggle GitRepo
+    command: bash
+    background: false
+    args:
+      - -c
+      - >-
+        suspended=$(kubectl --context $CONTEXT get gitrepo -n $NAMESPACE $NAME -o=custom-columns=TYPE:.spec.suspend | tail -1);
+        verb=$([ $suspended = "true" ] && echo "resume" || echo "suspend");
+        flux
+        $verb source git
+        --context $CONTEXT
+        -n $NAMESPACE $NAME
+        | less -K
+  reconcile-git:
+    shortCut: Shift-R
+    confirm: false
+    description: Flux reconcile
+    scopes:
+      - gitrepositories
+    command: bash
+    background: false
+    args:
+      - -c
+      - >-
+        flux
+        reconcile source git
+        --context $CONTEXT
+        -n $NAMESPACE $NAME
+        | less -K
+  get-suspended-gitrepositories:
+    shortCut: Shift-S
+    confirm: false
+    description: Suspended GitRepo
+    scopes:
+      - gitrepositories
+    command: sh
+    background: false
+    args:
+      - -c
+      - >-
+        kubectl get
+        --context $CONTEXT
+        --all-namespaces
+        gitrepositories.source.toolkit.fluxcd.io -o json
+        | jq -r '.items[] | select(.spec.suspend==true) | [.metadata.name,.spec.suspend] | @tsv'
+        | less -K
