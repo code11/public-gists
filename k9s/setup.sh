@@ -43,3 +43,13 @@ yq eval '.plugins.remove_finalizers.description = "Removes finalizers"' -i "$PLU
 
 # Add aliases
 yq -i '.aliases.git = "gitrepo"' "$CONFIG_DIR/aliases.yaml"
+
+# SKINS
+TMP_DIR=$(mktemp -d /tmp/k9s-skins-XXXXXX)
+cd $TMP_DIR
+git clone --filter=blob:none --no-checkout https://github.com/derailed/k9s.git .
+git sparse-checkout init --no-cone
+git sparse-checkout set /skins
+git checkout
+
+cp -rf skins $CONFIG_DIR
